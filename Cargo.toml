@@ -6,4 +6,6 @@ description = "Parser for the Microsoft .LNK format"
 license = "MIT"
 
 [dependencies]
-time = "*"
+time = "0.1.41"
+bitflags = "1.0.4"
+
