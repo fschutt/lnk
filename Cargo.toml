@@ -1,0 +1,9 @@
+[package]
+name = "lnk"
+version = "0.1.0"
+authors = ["Felix Schütt <felix.schuett@maps4print.com>"]
+description = "Parser for the Microsoft .LNK format"
+license = "MIT"
+
+[dependencies]
+time = "*"

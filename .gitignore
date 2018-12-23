@@ -1,0 +1,6 @@
+/target
+/assets
+**/*.rs.bk
+Cargo.lock
+*.lnk
+*.bin
