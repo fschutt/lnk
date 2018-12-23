@@ -167,9 +167,9 @@ pub enum ShowCmd {
     ShowMinNoActive,
 }
 
-pub const SW_SHOWNORMAL: u32 = 0x00000001;
-pub const SW_SHOWMAXIMIZED: u32 = 0x00000003;
-pub const SW_SHOWMINNOACTIVE: u32 = 0x00000007;
+const SW_SHOWNORMAL: u32 = 0x00000001;
+const SW_SHOWMAXIMIZED: u32 = 0x00000003;
+const SW_SHOWMINNOACTIVE: u32 = 0x00000007;
 
 impl From<u32> for ShowCmd {
     fn from(input: u32) -> ShowCmd {
@@ -226,7 +226,7 @@ impl HotKeyFlags {
     }
 }
 
-pub const HOTKEY_MAP: [(HotKey, u8);63] = [
+const HOTKEY_MAP: [(HotKey, u8);63] = [
     (HotKey::Zero, 0x30),
     (HotKey::One, 0x31),
     (HotKey::One, 0x32),
@@ -481,9 +481,9 @@ pub enum HotKeyModifier {
     Alt,
 }
 
-pub const HOTKEYF_SHIFT: u8 = 0x01;
-pub const HOTKEYF_CONTROL: u8 = 0x02;
-pub const HOTKEYF_ALT: u8 = 0x04;
+const HOTKEYF_SHIFT: u8 = 0x01;
+const HOTKEYF_CONTROL: u8 = 0x02;
+const HOTKEYF_ALT: u8 = 0x04;
 
 impl HotKeyModifier {
     pub fn try_from(input: u8) -> Option<Self> {
@@ -541,7 +541,7 @@ fn parse_tm(input: &[u8]) -> Option<Tm> {
     let high_bit = u32_from_input(&input[4..8]);
     let input_tm_nanoseconds = ((high_bit as u64) << 32) + (low_bit as u64);
 
-    const SECOND: u64   = 10000000;
+    const SECOND: u64   = 10_000_000;
     const MINUTE: u64   = 60 * SECOND;
     const HOUR: u64     = 60 * MINUTE;
     const DAY: u64      = 24 * HOUR;
@@ -578,29 +578,27 @@ fn parse_tm(input: &[u8]) -> Option<Tm> {
 
     let nanoseconds_since_1990 = input_tm_nanoseconds.saturating_sub(nanoseconds_diff);
 
-    let input_in_seconds = nanoseconds_since_1990 / SECOND;
-    let input_in_minutes = nanoseconds_since_1990 / MINUTE;
-    let input_in_hours = nanoseconds_since_1990 / HOUR;
+    let nanos_remaining = nanoseconds_since_1990 % SECOND;
+    let sec_remaining = (nanoseconds_since_1990 % MINUTE) / SECOND;
+    let min_remaining = (nanoseconds_since_1990 % HOUR) / MINUTE;
+    let hours_remaining = (nanoseconds_since_1990 % DAY) / HOUR;
+
     let input_in_days = nanoseconds_since_1990 / DAY;
 
-    let nanos_remaining = nanoseconds_since_1990 - (input_in_seconds * SECOND);
-    let sec_remaining = input_in_seconds - (input_in_minutes * 60);
-    let min_remaining = input_in_minutes - (input_in_hours * 60);
-    let hours_remaining = input_in_hours - (input_in_days * 24);
-
+    // 1990 to 1st january of the current year in days
+    let mut day_first_january_this_year = 0;
     let mut current_year = START_YEAR_UNIX;
-    let mut current_day = 0;
-    while current_day < input_in_days {
+    while day_first_january_this_year < input_in_days {
         let added_day = if is_year_leap_year(current_year) { 366 } else { 365 };
-        if current_day + added_day > input_in_days {
+        if day_first_january_this_year + added_day > input_in_days {
             break;
         }
 
-        current_day += added_day;
+        day_first_january_this_year += added_day;
         current_year += 1;
     }
 
-    let day_in_year = input_in_days - current_day;
+    let day_in_year = input_in_days - day_first_january_this_year;
 
     let mut current_month = 0;
     let mut current_day_in_year = 0;
@@ -615,10 +613,8 @@ fn parse_tm(input: &[u8]) -> Option<Tm> {
         current_month += 1;
     }
 
-    let current_month_len = if current_year_is_leap_year { MONTHS_LEN[current_month].1 } else { MONTHS_LEN[current_month].0 };
-    let day_in_month = current_month_len - (day_in_year - current_day_in_year); // i.e. 13 = 13th
+    let day_in_month = day_in_year - current_day_in_year;
 
-    // nanoseconds_since_1990
     Some(Tm {
         tm_nsec: nanos_remaining as i32,
         tm_sec: sec_remaining as i32,
@@ -639,6 +635,5 @@ fn parse_tm(input: &[u8]) -> Option<Tm> {
 fn parse_program_data_file() {
     const BYTES: &[u8] = include_bytes!("../assets/ProgramData.lnk");
     let header = ShellLinkHeader::try_from(&BYTES[0..76]);
-    println!("len: {:?}", BYTES.len());
     println!("header: {:#?}", header);
 }
