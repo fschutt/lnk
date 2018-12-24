@@ -57,7 +57,7 @@ pub enum ShellLinkHeaderParseError {
 }
 
 // Header length - 76 in decimal
-const HEADER_LEN: usize = 0x0000004C;
+pub(crate) const HEADER_LEN: usize = 0x0000004C;
 /// LinkCLSID - class identifier of `00021401-0000-0000-C000-000000000046`
 const LINK_CLSID: [u32;4] = [0x00021401, 0x00000000, 0x000000C0, 0x46000000];
 
@@ -67,9 +67,11 @@ impl ShellLinkHeader {
 
         use self::ShellLinkHeaderParseError::*;
 
-        if input.len() != HEADER_LEN {
+        if input.len() < HEADER_LEN {
             return Err(InvalidHeaderLength(input.len()))
         }
+
+        let input = &input[0..HEADER_LEN];
 
         // to disable bounds checking
         assert!(input.len() == HEADER_LEN);
