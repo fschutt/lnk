@@ -480,6 +480,7 @@ const HOTKEYF_SHIFT: u8 = 0x01;
 const HOTKEYF_CONTROL: u8 = 0x02;
 const HOTKEYF_ALT: u8 = 0x04;
 
+
 impl HotKeyModifier {
     pub fn try_from(input: u8) -> Option<Self> {
         match input {
