@@ -1,6 +1,7 @@
 ///! Section 2.1 parser for a ShellLinkHeader
 
 use time::Tm;
+use error::{ShellLinkHeaderParseError, HotKeyFlagsParseError};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct ShellLinkHeader {
@@ -39,21 +40,6 @@ pub struct ShellLinkHeader {
     // Reserved1 (2 bytes): A value that MUST be zero.
     // Reserved2 (4 bytes): A value that MUST be zero.
     // Reserved3 (4 bytes): A value that MUST be zero.
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
-pub enum ShellLinkHeaderParseError {
-    /// Header too short, expected 76 bytes, got n bytes instead
-    InvalidHeaderLength(usize),
-    /// Header says it's n bytes long, but the correct size is 76 bytes - corrupt header
-    CorruptHeaderLength(u32),
-    /// Shell link is not of class LINK_CLSID.
-    CorruptHeaderClsId([u32;4]),
-    /// Link flags field could not be parsed - contains unknown or invalid bits
-    InvalidLinkFlags(u32),
-    /// File attributes coult not be parsed - contains unknow or invalid bits
-    InvalidFileAttributes(u32),
-    InvalidHotKeyFlags(HotKeyFlagsParseError),
 }
 
 // Header length - 76 in decimal
@@ -193,12 +179,6 @@ impl From<ShowCmd> for u32 {
 pub struct HotKeyFlags {
     pub hot_key: HotKey,
     pub modifier: HotKeyModifier,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
-pub enum HotKeyFlagsParseError {
-    InvalidHotKey(u8),
-    InvalidHotKeyModifier(u8),
 }
 
 impl HotKeyFlags {
